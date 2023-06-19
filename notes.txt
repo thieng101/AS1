@@ -1,0 +1,32 @@
+What is values?
+How to handle duplicated values?
+How to do split?
+We have three constructors, could we use those three constructors to create new tree?
+How to know where we are splitting?
+
+do the split based on split at the leaf or split at the internal node
+
+
+    // private boolean addToNonEmptyTree(TwoFourTreeItem root, int value) {
+    //     TwoFourTreeItem curNode = root;
+
+    //     while (true) {
+    //         if (curNode.values == 3) { // if node is four node
+    //             // split current node
+    //             split(curNode);
+    //             // back up
+    //             curNode = curNode.parent;
+
+    //             // search for leaf node
+    //         } else if (curNode.isLeaf) { // if node is leaf
+    //             break;
+    //         } else { // go until we find the right node
+    //             // get the next child node
+    //         }
+    //     }
+
+    //     // insert item at the right leaf node after all split,
+    //     // if insert successfully return true other wise return false
+    //     return curNode.insertItem(value);
+    // }
+    
