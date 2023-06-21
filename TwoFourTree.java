@@ -126,7 +126,7 @@ public class TwoFourTree {
         // check if a value is in the tree already
         // return true if it is, else return false
         public boolean checkValue(int value){
-            if((value1 == value) || (value2 == value) || (value1 == value))
+            if((value1 == value) || (value2 == value) || (value3 == value))
                 return true; 
 
             else if(values == 1){
@@ -199,8 +199,6 @@ public class TwoFourTree {
     }
 
 
-
-
     TwoFourTreeItem root = null;
 
     public boolean addValue(int value){
@@ -208,7 +206,7 @@ public class TwoFourTree {
         //add at root
         if (root == null) {
             root = new TwoFourTreeItem(value);
-            System.out.println("Adding at root");
+            // System.out.println("Adding at root");
             // System.out.println("First Value:" + root.value1);
             return true;
         }
@@ -225,35 +223,30 @@ public class TwoFourTree {
                 {
                 //split and return the parent node
                 curNode = split(curNode);
-                System.out.println("value at the parent after splitting " + curNode.value1);
-                System.out.println("value at the parent after splitting " + curNode.value2);
-                System.out.println("value at the parent after splitting " + curNode.value3);
+                // System.out.println("value at the parent after splitting " + curNode.value1);
+                // System.out.println("value at the parent after splitting " + curNode.value2);
+                // System.out.println("value at the parent after splitting " + curNode.value3);
 
 
                 //search from the parent node and return next node
                 curNode = getNextChild(curNode,value);
                 }
                 else if(curNode.isLeaf){
-                System.out.println("found the leaf and break the loop");
+                // System.out.println("found the leaf and break the loop");
                 break;
                 }
                 else{ 
                     curNode = getNextChild(curNode,value);
-                    System.out.println("Current value: " + curNode.value1);
-                    if(curNode.rightChild != null){
-                        System.out.println("not null");
-                    }
                 }
                 
             
             }
 
         //find a leaf and insert
-        System.out.println("insert at node has   " + curNode.value1 + " " + curNode.value2);
+        // System.out.println("insert at node has   " + curNode.value1 + " " + curNode.value2);
         return curNode.insertItem(value);
         
       }
-
 
 
     public TwoFourTreeItem split(TwoFourTreeItem thisNode) {
@@ -266,7 +259,7 @@ public class TwoFourTree {
 
         // if the parent is null
         if (thisNode.parent == null) {
-            System.out.println("Split at the root of the tree");
+            // System.out.println("Split at the root of the tree");
             //save value at root
             
             int savedVal1 = thisNode.value1;
@@ -275,7 +268,7 @@ public class TwoFourTree {
  
 
             if(!root.isLeaf){
-                System.out.println("Split at root when root has chilred");
+                // System.out.println("Split at root when root has chilred");
                  child1 = thisNode.leftChild;
                  child2 = thisNode.centerLeftChild;
                  child3 = thisNode.centerRightChild;
@@ -327,20 +320,20 @@ public class TwoFourTree {
             // saved the parents node for the ease of use
             // TwoFourTreeItem parent = thisNode.parent;
 
-            System.out.println("Split when parent exists");
+            // System.out.println("Split when parent exists");
 
             // if parent is two node tree, has one key
             if (thisNode.parent.isTwoNode()) {
-                System.out.println("split at two node");
+                // System.out.println("split at two node");
 
                 int middlValue = thisNode.value2;
-                System.out.println("Valuat at this node is: " + middlValue);
-                System.out.println("Valuat at this parent node is: " + thisNode.parent.value1);
+                // System.out.println("Valuat at this node is: " + middlValue);
+                // System.out.println("Valuat at this parent node is: " + thisNode.parent.value1);
 
 
                 //case 1: current node is left child
                 if(middlValue < thisNode.parent.value1){
-                    System.out.println("split at the left child of two node");
+                    // System.out.println("split at the left child of two node");
                     //update value in the root
                     thisNode.parent.value2 = thisNode.parent.value1;
                     thisNode.parent.value1 = middlValue;
@@ -398,10 +391,10 @@ public class TwoFourTree {
 
                     //check if current node has children
                     if(!thisNode.isLeaf){
-                        System.out.println("THis node is not leaf");
+                        // System.out.println("THis node is not leaf");
                         child1 = thisNode.leftChild;
                         child2 = thisNode.centerLeftChild;
-                        System.out.println("Valur of left child of center node is " + child2.value1);
+                        // System.out.println("Valur of left child of center node is " + child2.value1);
                         child3 = thisNode.centerRightChild;
                         child4 = thisNode.rightChild;
 
@@ -506,7 +499,7 @@ public class TwoFourTree {
 
                 //case 2: current node is the center child
                 else if( thisNode.parent.value1 < middleValue && middleValue < thisNode.parent.value2){
-                    System.out.println("split at center child");
+                    // System.out.println("split at center child");
                     //update values in thisNode node
                     thisNode.parent.value3 = thisNode.parent.value2;
                     thisNode.parent.value2 = middleValue;
@@ -660,22 +653,22 @@ public class TwoFourTree {
 
         if(root.isTwoNode())
         {        
-            System.out.println("getNextChild at root: " + root.value1);
+            // System.out.println("getNextChild at root: " + root.value1);
             //has value 1
             if(value < root.value1)
             {
-                System.out.println("go to the left child" + root.leftChild.value1);
+                // System.out.println("go to the left child" + root.leftChild.value1);
                 return root.leftChild;
             }
             else{
 
-                System.out.println("go to right child: " + root.rightChild.value1);
+                // System.out.println("go to right child: " + root.rightChild.value1);
                 return root.rightChild;
             }
         }
         else if(root.isThreeNode())
         { 
-            System.out.println("Get next child when parent is three node" + root.value1);
+            // System.out.println("Get next child when parent is three node" + root.value1);
             //has value 1 and value 2
             if(value < root.value1){
                 return root.leftChild;          //smaller than value 1
@@ -690,7 +683,7 @@ public class TwoFourTree {
         }
         else
         { 
-            System.out.println("get next child when root is four node" + root.value1);
+            // System.out.println("get next child when root is four node" + root.value1);
             TwoFourTreeItem saveRoot = null;
             //has value 1 and value 2 and value 3
             if(value < root.value1){
@@ -709,35 +702,20 @@ public class TwoFourTree {
     }
 
 
-    public int getValue1(){
-        return root.value1;
-    }
-
-    public int getValue2(){
-        return root.value2;
-    }
-
-    public int getValue3(){
-        return root.value3;
-    }
-
-
     public boolean deleteValue(int value) {
-        return false;
+        if(root == null){
+            return false;
+        }else if(!root.checkValue(value)){
+            return false;
+        }else{
+            return true;
+        }
     }
 
 
     public void printInOrder() {
         if (root != null)
             root.printInOrder(0);
-    }
-
-    public void printRigthChildren(){
-        System.out.println(root.value1);
-        System.out.println(root.leftChild.value1);
-        System.out.println(root.rightChild.value1);
-        System.out.println(root.rightChild.value2);
-
     }
     
     // create array of value and call for loop with addValue function

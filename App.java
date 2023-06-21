@@ -131,6 +131,56 @@ public class App {
         tft.addValue(89);
         tft.addValue(97);
 
+        if(tft.hasValue(2)){
+            System.out.println("has value 2");
+        }
+        if(tft.hasValue(3)){
+            System.out.println("has value 3");
+        }
+        if(tft.hasValue(5)){
+            System.out.println("has value 5");
+        }
+        if(tft.hasValue(7)){
+            System.out.println("has value 7");
+        }
+        if(tft.hasValue(11)){
+            System.out.println("has value 11");
+        }
+        if(tft.hasValue(13)){
+            System.out.println("has value 13");
+        }
+        if(tft.hasValue(17)){
+            System.out.println("has value 17");
+        }
+        if(tft.hasValue(19)){
+            System.out.println("has value 19");
+        }
+        if(tft.hasValue(23)){
+            System.out.println("has value 23");
+        }
+        if(tft.hasValue(29)){
+            System.out.println("has value 29" );
+        }
+        if(tft.hasValue(23)){
+            System.out.println("has value 23");
+        }
+        if(tft.hasValue(79)){
+            System.out.println("has value 79");
+        }
+        if(tft.hasValue(83)){
+            System.out.println("has value 83");
+        }
+        if(tft.hasValue(89)){
+            System.out.println("has value 89");
+        }
+        if(tft.hasValue(97)){
+            System.out.println("has value 97");
+        }
+
+
+
+
+
         System.out.println("Static test: first few prime numbers:");
         tft.printInOrder();
         // tft.deleteValue(37);
@@ -143,11 +193,11 @@ public class App {
         // System.out.println("\nWithout 97:");
         // tft.printInOrder();
 
-        // executeIntCase(100, 20, true);
-        // executeIntCase(1000, 200, true);
-        // executeIntCase(10000, 2000, true);
-        // executeIntCase(100000, 20000, true);
-        // executeIntCase(1000000, 200000, true);
-        // executeIntCase(10000000, 2000000, true);
+        executeIntCase(100, 20, true);
+        executeIntCase(1000, 200, true);
+        executeIntCase(10000, 2000, true);
+        executeIntCase(100000, 20000, true);
+        executeIntCase(1000000, 200000, true); 
+        executeIntCase(10000000, 2000000, true);
     }
 }
