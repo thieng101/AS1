@@ -1,169 +1,153 @@
-import javax.swing.text.Style;
+import java.util.ArrayList;
+import java.util.Random;
 
 public class App {
+	static long RandomSeed = 1;
+	static Random RandomGenerator = new Random(RandomSeed);
+
+    private static ArrayList<Integer> generateIntArrayList(int howMany) {
+		ArrayList<Integer> list = new ArrayList<Integer>(howMany);
+		
+		for(int i = 0; i < howMany; i++) {
+			list.add(Integer.valueOf(RandomGenerator.nextInt()));
+		}
+		
+		return list;
+	}
+
+	private static ArrayList<Integer> generateStrikeList(ArrayList<Integer> fromList, int howMany) {
+		ArrayList<Integer> strikeList = new ArrayList<Integer>(howMany);
+		int fromLast = fromList.size() - 1;
+		
+		for(int i = 0; i < howMany; i++) {
+			strikeList.add(fromList.get(RandomGenerator.nextInt(fromLast)));
+		}
+		
+		return strikeList;
+	}
+
+	private static ArrayList<Integer> generateRemoveList(ArrayList<Integer> fromList) {
+		ArrayList<Integer> removeList = new ArrayList<Integer>(fromList.size()/2);
+		
+		for(int i = 0; i < fromList.size() / 2; i++) {
+			removeList.add(fromList.get(i));
+		}
+		
+		return removeList;
+	}
+
+	private static <T> int executeFinds(TwoFourTree coll, ArrayList<Integer> strikes) {
+		boolean sentinel;
+		int failures = 0;
+
+		for (Integer e: strikes) {
+			sentinel = coll.hasValue(e.intValue());
+			if(sentinel == false) {
+				failures++;
+			}
+		}
+		
+		if(failures > 0) {
+			System.out.printf("(%,d missing) ", failures);
+		}
+		
+		return 0;
+	}
+
+    public static void executeIntCase(int listSize, int strikeSize, boolean includeRemoves) {
+		System.out.printf("CASE: %,d integers, %,d finds, %,d removals.  Generating...\n", listSize, strikeSize, strikeSize/2);
+
+		ArrayList<Integer> intlist = generateIntArrayList(listSize);
+		ArrayList<Integer> strikes = generateStrikeList(intlist, strikeSize);
+        ArrayList<Integer> removeList = generateRemoveList(strikes);
+		long start;
+		long end;
+		long ms;
+
+        TwoFourTree theTree = new TwoFourTree();
+		
+        System.out.printf("  TwoFourTree ");
+
+        start = System.currentTimeMillis();
+        for (Integer e: intlist) {
+            theTree.addValue(e.intValue());
+        }
+        end = System.currentTimeMillis();
+        ms = end - start;
+		System.out.printf("add: %,6dms  ", ms);
+
+        start = System.currentTimeMillis();
+        executeFinds(theTree, strikes);
+        end = System.currentTimeMillis();
+        ms = end - start;
+		System.out.printf("find: %,6dms  ", ms);
+
+        if(includeRemoves) {
+            start = System.currentTimeMillis();
+            for (Integer e: removeList) {
+                // System.out.printf("----- delete %d from tree\n", e.intValue());
+                /// theTree.printInOrder();
+                theTree.deleteValue(e.intValue());
+            }
+            end = System.currentTimeMillis();
+            ms = end - start;
+            System.out.printf("del: %,6dms  ", ms);
+
+            start = System.currentTimeMillis();
+            executeFinds(theTree, strikes);
+            end = System.currentTimeMillis();
+            ms = end - start;
+            System.out.printf("find: %,6dms  ", ms);
+        }
+	
+		System.out.printf("\n");
+        // theTree.printInOrder();
+	}
+
     public static void main(String[] args) throws Exception {
         TwoFourTree tft = new TwoFourTree();
+        tft.addValue(2);
+        tft.addValue(3);
+        tft.addValue(5);
+        tft.addValue(7);
+        tft.addValue(11);
+        tft.addValue(13);
+        tft.addValue(17);
+        tft.addValue(19);
+        tft.addValue(23);
+        tft.addValue(29);
+        tft.addValue(31);
+        tft.addValue(37);
+        tft.addValue(41);
+        tft.addValue(43);
+        tft.addValue(47);
+        tft.addValue(53);
+        tft.addValue(59);
+        tft.addValue(67);
+        tft.addValue(71);
+        tft.addValue(73);
+        tft.addValue(79);
+        tft.addValue(83);
+        tft.addValue(89);
+        tft.addValue(97);
 
-        
-        
-        if(tft.addValue(10)){
-            System.out.println("Adding" + 10 +  "successfully");
-        }
-
-        if(tft.addValue(50)){
-            System.out.println("Adding"+ 50 +"successfully");
-        }
-
-        
-        
-        if(tft.addValue(20)){
-            System.out.println("Adding"+ 20 +"successfully");
-        }   
-        
-        if(tft.addValue(40)){
-            System.out.println("Adding"+ 40 +"successfully");
-        }
-        
-        if(tft.addValue(15)){
-            System.out.println("Adding"+ 15 +"successfully");
-        }
-
-        if(tft.addValue(16)){
-            System.out.println("Adding"+ 16 +"successfully");
-        }
-
-        // if(tft.addValue(17)){
-        //     System.out.println("Adding"+ 17 +"successfully");
-        // }
-
-        if(tft.addValue(51)){
-            System.out.println("Adding"+ 51 +"successfully");
-        }
-
-
-        if(tft.addValue(52)){
-            System.out.println("Adding"+ 52 +"successfully");
-        }
-
-
-        if(tft.addValue(41)){
-            System.out.println("Adding"+ 51 +"successfully");
-        }
-
-        if(tft.addValue(42)){
-            System.out.println("Adding"+ 42 +"successfully");
-        }
-
-        //case:three node center child
-        // if(tft.addValue(43)){
-        //     System.out.println("Adding"+ 43 +"successfully");
-        // }
-
-        //case: three node left child
-        // if(tft.addValue(17)){
-        //     System.out.println("Adding"+ 17 +"successfully");
-        // }
-
-        //case: three node right child
-        if(tft.addValue(53)){
-            System.out.println("Adding"+ 53 +"successfully");
-        }
-             
-        if(tft.addValue(70)){
-            System.out.println("Adding"+ 70 +"successfully");
-        }
-
-        if(tft.addValue(17)){
-            System.out.println("Adding"+ 17 +"successfully");
-        }
-
-        if(tft.addValue(43)){
-            System.out.println("Adding"+ 43 +"successfully");
-        }
-
-
-     
-
-        //child cases
-        //case 1: two node left child
-        // if(tft.addValue(44)){
-        //     System.out.println("Adding"+ 44 +"successfully");
-        // }
-
-        //case 2: two node right child
-        if(tft.addValue(75)){
-            System.out.println("Adding"+ 75 +"successfully");
-        }
-
-        if(tft.addValue(80)){
-            System.out.println("Adding"+ 80 +"successfully");
-        }
-
-        if(tft.addValue(87)){
-            System.out.println("Adding"+ 87 +"successfully");
-        }
-
-        if(tft.addValue(88)){
-            System.out.println("Adding"+ 88 +"successfully");
-        }
-
-        if(tft.addValue(89)){
-            System.out.println("Adding"+ 89 +"successfully");
-        }
-
-        if(tft.addValue(54)){
-            System.out.println("Adding"+ 54 +"successfully");
-        }
-
-        if(tft.addValue(55)){
-            System.out.println("Adding"+ 55 +"successfully");
-        }
-        
-        if(tft.addValue(56)){
-            System.out.println("Adding"+ 56 +"successfully");
-        }
-
-        if(tft.addValue(57)){
-            System.out.println("Adding"+ 57 +"successfully");
-        }
-
-        if(tft.addValue(58)){
-            System.out.println("Adding"+ 58 +"successfully");
-        }
-
-        // if(tft.addValue(59)){
-        //     System.out.println("Adding"+ 59 +"successfully");
-        // }
-
-        //test care child: three node , right child
-        if(tft.addValue(90)){
-            System.out.println("Adding"+ 90 +"successfully");
-        }
-
-        if(tft.addValue(91)){
-            System.out.println("Adding"+ 91 +"successfully");
-        }
-
-        if(tft.addValue(92)){
-            System.out.println("Adding"+ 92 +"successfully");
-        }
-
-        if(tft.addValue(93)){
-            System.out.println("Adding"+ 93 +"successfully");
-        }
-
-        if(tft.addValue(76)){
-            System.out.println("Adding"+ 76 +"successfully");
-        }
-
-        System.out.println("root value 1 is " + tft.getValue1());        
-        System.out.println("root value 2 is " + tft.getValue2());
-        System.out.println("root value 3 is " + tft.getValue3());
-
-       
-        // tft.printInOrder();
-        // tft.printRigthChildren();
-
+        System.out.println("Static test: first few prime numbers:");
         tft.printInOrder();
+        // tft.deleteValue(37);
+        // System.out.println("\nWithout 37:");
+        // tft.printInOrder();
+        // tft.deleteValue(73);
+        // System.out.println("\nWithout 73:");
+        // tft.printInOrder();
+        // tft.deleteValue(97);
+        // System.out.println("\nWithout 97:");
+        // tft.printInOrder();
+
+        // executeIntCase(100, 20, true);
+        // executeIntCase(1000, 200, true);
+        // executeIntCase(10000, 2000, true);
+        // executeIntCase(100000, 20000, true);
+        // executeIntCase(1000000, 200000, true);
+        // executeIntCase(10000000, 2000000, true);
     }
 }

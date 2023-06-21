@@ -58,75 +58,27 @@ public class TwoFourTree {
 
         private void printIndents(int indent) {
             for (int i = 0; i < indent; i++)
-                System.out.println(" ");
+                System.out.printf(" ");
         }
 
-        // 4 of isLeaf is check if the node has childre. But we also need to check
-        // whether that node is exists
         public void printInOrder(int indent) {
-            //print at the left child
-            if (!isLeaf) leftChild.printInOrder(indent + 1);
-
+            if(!isLeaf) leftChild.printInOrder(indent + 1);
             printIndents(indent);
             System.out.printf("%d\n", value1);
-
-            if (isThreeNode()) {
-                if (!isLeaf) centerChild.printInOrder(indent + 1);
-
-                printIndents(indent);
-                System.out.printf("%d\n", value2);
-
-            } else if (isFourNode()) {
-                if (!isLeaf) centerLeftChild.printInOrder(indent + 1);
-
-                printIndents(indent);
-                System.out.printf("%d\n", value2);
-
-                if (!isLeaf) centerRightChild.printInOrder(+1);
-
-                printIndents(indent);
-                System.out.printf("%d\n", value3);
-            }
-            if (!isLeaf)
-                rightChild.printInOrder(indent + 1);
-
-        }
-
-        public void printInOrder2(int indent) {
-            //print at the left child
-            if (!isLeaf){
-                System.out.println("print left child first");
-                leftChild.printInOrder2(indent + 1);
-            }
-
+            if(isThreeNode()) {
+            if(!isLeaf) centerChild.printInOrder(indent + 1);
             printIndents(indent);
-
-            System.out.printf("%d\n", value1);
-
-            if (isThreeNode()) {
-                if (!isLeaf) centerChild.printInOrder2(indent + 1);
-
-                printIndents(indent);
-                System.out.printf("%d\n", value2);
-
-            } else if (isFourNode()) {
-                if (!isLeaf) centerLeftChild.printInOrder2(indent + 1);
-
-                printIndents(indent);
-                System.out.printf("%d\n", value2);
-
-                if (!isLeaf) centerRightChild.printInOrder2(+1);
-
-                printIndents(indent);
-                System.out.printf("%d\n", value3);
+            System.out.printf("%d\n", value2);
+            } else if(isFourNode()) {
+            if(!isLeaf) centerLeftChild.printInOrder(indent + 1);
+            printIndents(indent);
+            System.out.printf("%d\n", value2);
+            if(!isLeaf) centerRightChild.printInOrder(indent + 1);
+            printIndents(indent);
+            System.out.printf("%d\n", value3);
             }
-            if (!isLeaf){
-                System.out.println("print right child");
-                rightChild.printInOrder2(indent + 1);
-            }
-
+            if(!isLeaf) rightChild.printInOrder(indent + 1);
         }
-
 
         //update leaf status 
         public boolean hasChildren(){
@@ -138,7 +90,6 @@ public class TwoFourTree {
 
         public boolean insertItem(int value) {
 
-            
             // continuing the insertion
             if (values == 1) {              // insert at two nodes
                 if (value < value1) {       // value is smaller than the first value
@@ -154,6 +105,7 @@ public class TwoFourTree {
 
             } else if (values == 2) { // insert at three nodes
                 if (value < value1) { // value is the smallest
+                    value3 = value2;
                     value2 = value1;
                     value1 = value;
                 } else if (value1 < value && value < value2) { // value is in the middle
