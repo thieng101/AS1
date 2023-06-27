@@ -4,7 +4,6 @@ public class TwoFourTree {
     private class TwoFourTreeItem {
 
         int values = 1; 
-
         int value1 = 0; // always exists.
         int value2 = 0; // exists iff the node is a 3-node or 4-node
         int value3 = 0; // exists iff the node is 4-node
@@ -196,6 +195,147 @@ public class TwoFourTree {
             return false; 
         }
 
+
+        public TwoFourTreeItem searchValue(int value){
+                if((value1 == value) || (  value2 == value) || ( value3 == value))
+                    return  root;
+
+                else if(values == 1){
+                    if(value < value1){
+                        if(leftChild == null)
+                            return null; 
+
+                        return leftChild.searchValue(value);
+                    }
+                    else if(value > value1){
+                        if(rightChild == null)
+                            return null; 
+
+                        return rightChild.searchValue(value);
+                    }
+                }
+
+                else if(values == 2){
+                    if(value < value1){
+                        if(leftChild == null)
+                            return null; 
+
+                        return leftChild.searchValue(value);
+                    }
+                    else if(value > value2){
+                        if(rightChild == null)
+                            return null; 
+
+                        return rightChild.searchValue(value);
+                    }
+                    else{
+                        if(centerChild == null)
+                            return null; 
+
+                        return centerChild.searchValue(value);
+                    }
+                }
+
+                else if(values == 3){
+                    if(value < value1){
+                        if(leftChild == null)
+                            return null; 
+
+                        return leftChild.searchValue(value);
+                    }
+                    else if(value > value3){
+                        if(rightChild == null)
+                            return null; 
+
+                        return rightChild.searchValue(value);
+                    }
+                    else if(value <    value2){
+                        if(centerLeftChild == null)
+                            return null; 
+
+                        return centerLeftChild.searchValue(value);
+                    }
+                    else if(value >    value2){
+                        if(centerRightChild == null)
+                            return null; 
+
+                        return centerRightChild.searchValue(value);
+                    }
+                }
+
+                // default 
+                return null; 
+        }
+        
+        //this is used when root has three keys
+        //also it is used when remove a value in a node that has more than one key
+        public boolean directDeleteAtLeafNode(int value){
+            if(values == 1){
+                    value1 = 0;
+                    root = null;
+                    return true;
+                }
+            else if(values == 2){
+                if(value1 == value){
+                    value1 = value2;
+                }                        
+                
+                value2 = 0;
+                values = 1;
+                //delete successfully
+                return true;
+
+            }
+            else{                                           //values == 3
+                if(value1 == value){
+                    value1 = value2;
+                    value2 = value3;
+                    value3 = 0;
+                    
+                }else if(value2 == value){
+                    value2 = value3;
+                    value3 = 0;
+                }else{
+                    value3 = 0;
+                }  
+                values = 2;
+                //delete successfully
+                return true;
+
+            }
+        }
+        
+        public void removeValueInNodeHasMoreThanOneKey(int value){
+            if(values == 2){
+                if(value1 == value){
+                    value1 = value2;
+                }                        
+                    
+                value2 = 0;
+                values = 1;
+               
+            }
+            else{                                           //values == 3
+                if(value1 == value){
+                    value1 = value2;
+                    value2 = value3;
+                    value3 = 0;
+                    
+                }else if(value2 == value){
+                    value2 = value3;
+                    value3 = 0;
+                }else{
+                    value3 = 0;
+                }  
+                values = 2;
+                
+
+            }
+        }
+       
+        public boolean checkValueWithinTheNode(int value){
+            return value1 == value || value2 == value || value3 == value;
+        }
     }
 
 
@@ -701,15 +841,1124 @@ public class TwoFourTree {
         }
     }
 
-
+    
+    //fuse and the last part
     public boolean deleteValue(int value) {
-        if(root == null){
-            return false;
-        }else if(!root.checkValue(value)){
-            return false;
-        }else{
-            return true;
+            if(root == null)
+                return false;
+
+            if(!(hasValue(value)))
+                return false; 
+
+            // we know the tree exist and the value is in the tree 
+            // if the root is a 2-node and both its children are 2-nodes, fuse it
+            if(root.isTwoNode() && root.leftChild.isTwoNode() && root.rightChild.isTwoNode()){
+
+                // merge values
+                root.value2 = root.value1;
+                root.value1 = root.leftChild.value1;
+                root.value3 = root.rightChild.value1;
+
+                TwoFourTreeItem tempL = root.leftChild;
+                TwoFourTreeItem tempR = root.rightChild;
+
+                // merge pointers
+                root.leftChild = tempL.leftChild;
+                root.centerLeftChild = tempL.rightChild;
+                root.centerRightChild = tempR.leftChild;
+                root.rightChild = tempR.rightChild;
+
+                root.leftChild.parent = root;
+                root.centerLeftChild.parent = root;
+                root.centerRightChild.parent = root;
+                root.rightChild.parent = root;
+
+                root.values = 3;
+            }
+
+            //now cursively going downwards until you find T
+            TwoFourTreeItem curNode = root;
+            while (true){
+                //if current node is two nodes, then fuse or rotate
+                if(curNode.parent != null){
+                    if(curNode.isTwoNode()){
+                        //parent is three nodes
+                        if(curNode.parent.isThreeNode()){
+
+                            if(curNode == curNode.parent.leftChild){
+                                if(!(curNode.parent.centerChild.isTwoNode())){
+                                    //siblings are not two node, do rotation
+                                    curNode = rotate(curNode);
+                                }
+                                else{
+                                    curNode = fuse(curNode);
+                                }
+                            }
+                            else if(curNode == curNode.parent.centerChild){
+                                if(!(curNode.parent.rightChild.isTwoNode()) || !(curNode.parent.leftChild.isTwoNode()) ){
+                                    //siblings are not two node, do rotation
+                                    curNode = rotate(curNode);
+                                }
+                                else{
+                                    curNode = fuse(curNode);
+                                }
+
+                            }
+                            else if(curNode == curNode.parent.rightChild){
+                                if(!(curNode.parent.centerChild.isTwoNode())){
+                                    //siblings are not two node, do rotation
+                                    curNode = rotate(curNode);
+                                }
+                                else{
+                                    curNode = fuse(curNode);
+                                }
+                            }
+                        }
+
+                        //parent is four nodes
+                        else if(curNode.parent.isFourNode()){
+                            //curNode is left child
+                            if(curNode == curNode.parent.leftChild){
+
+                                if(!(curNode.parent.centerLeftChild.isTwoNode())){
+                                    //siblings are not two node, do rotation
+                                    curNode = rotate(curNode);
+                                }
+                                else{
+                                    curNode = fuse(curNode);
+                                }
+
+                            }    
+
+                            //curNode is centerLeftChild
+                            else if(curNode == curNode.parent.centerLeftChild) {
+
+                                if(!(curNode.parent.centerRightChild.isTwoNode()) || !(curNode.parent.leftChild.isTwoNode())){
+                                    //siblings are not two node, do rotation
+                                    curNode = rotate(curNode);
+                                }else{
+                                    curNode = fuse(curNode);
+                                }
+                            }
+
+                            //curNode is center right child
+                            else if(curNode == curNode.parent.centerRightChild){
+                                if(!(curNode.parent.rightChild.isTwoNode()) || !(curNode.parent.centerLeftChild.isTwoNode())){
+                                    //siblings are not two node, do rotation
+                                    curNode = rotate(curNode);
+                                }else{
+                                    curNode = fuse(curNode);
+                                }
+                            }
+
+                            //curNode is right child
+                            else if(curNode == curNode.parent.rightChild){
+
+                                if(!(curNode.parent.centerRightChild.isTwoNode())){
+                                    //siblings are not two node, do rotation
+                                    curNode = rotate(curNode);
+                                }else{
+                                    curNode = fuse(curNode);
+                                }
+                            }
+                        }
+                        
+                    }
+                }
+                //found T break out of the loop
+                if(curNode.checkValueWithinTheNode(value)){
+                    break;
+                }
+                
+                //keep going down until find T
+                curNode = getNextChild(curNode, value);
+            
+                
+            }
+
+            //if we reach here, it gurantees that T not in two nodes 
+            //T is in the leaf
+            if(curNode.isLeaf){
+                //direct delete
+                curNode.directDeleteAtLeafNode(value);
+            }
+            //T is not in the leaf
+            else{
+                
+                TwoFourTreeItem RP = null;
+                TwoFourTreeItem sibling = null;
+                int prv2;
+
+                if(curNode.isThreeNode()){
+                    if(value == curNode.value1){
+                        RP = curNode.centerChild;
+                    }
+                    else if(value == curNode.value2){
+                        RP = curNode.rightChild;
+                    }
+
+                    while(true){
+                        if(RP.isTwoNode()){
+                            if(RP.value1 == 41) System.out.println("Reach here");
+                            //problem is when it fuses, it become four nodes and there is no case when it is four node
+                            if(RP == curNode.centerChild){
+                                //fuse or rotate with left sibling
+                                if(!(RP.parent.leftChild.isTwoNode())){
+                                     // rotate clockwise
+                                    prv2 = RP.parent.value1;
+                                    RP.value2 = RP.value1;
+                                    RP.value1 = prv2;
+                                    if(RP.parent.leftChild.isThreeNode())
+                                        RP.parent.value1 = RP.parent.leftChild.value2;
+                                    if(RP.parent.leftChild.isFourNode())
+                                        RP.parent.value1 = RP.parent.leftChild.value3;
+                                    RP.centerChild = RP.leftChild;
+                                    RP.leftChild = RP.parent.leftChild.rightChild;
+                                    if(RP.leftChild != null)
+                                        RP.leftChild.parent = RP;
+                                    RP.values++;
+
+                                    // fix L values
+                                    if(RP.parent.leftChild.isThreeNode())
+                                        RP.parent.leftChild.value2 = 0;
+                                    if(RP.parent.leftChild.isFourNode())
+                                        RP.parent.leftChild.value3 = 0;
+
+                                    // fix L pointers
+                                    if(RP.parent.leftChild.isThreeNode()){
+                                        RP.parent.leftChild.rightChild = RP.parent.leftChild.centerChild;
+                                        RP.parent.leftChild.centerChild = null;
+                                    }
+                                    if(RP.parent.leftChild.isFourNode()){
+                                        RP.parent.leftChild.rightChild = RP.parent.leftChild.centerRightChild;
+                                        RP.parent.leftChild.centerChild = RP.parent.leftChild.centerLeftChild;
+                                        RP.parent.leftChild.centerLeftChild = null;
+                                        RP.parent.leftChild.centerRightChild = null;
+                                    }
+                                    RP.parent.leftChild.values--; 
+                                }else{
+                                    RP = fuse(RP.parent.leftChild);
+                                    if(RP == RP.parent.leftChild) System.out.println("now it become left child");
+                                    System.out.println("at value center left child : " + RP.centerLeftChild.value1 + " at value center right child: " + RP.centerRightChild.value1);
+                                }
+                            }else if (RP == curNode.rightChild){
+                                //fuse or rotate with center child
+                                if(!RP.parent.centerChild.isTwoNode()){
+                                    RP = rotate(RP);
+                                }else{
+                                    RP = fuse(RP);
+                                }
+                            }else{
+                                //get the sibling then check if sibling is two node
+                                sibling = getSibling(RP);
+                                if(sibling.isTwoNode()){
+                                    RP = fuse(RP);
+                                }else{
+                                    RP = rotate(RP);
+                                }
+
+                                
+                            }
+
+                        }
+
+                        if(RP.isLeaf){
+                            if(RP.checkValueWithinTheNode(value)){
+
+                                if(RP.value1 == value){
+                                    RP.value1 = RP.value2;
+                                    RP.value2 = RP.value3;
+                                }
+                                else if(RP.value2 == value){
+                                    RP.value2 = RP.value3;
+                                    RP.value3 = 0;
+                                }
+                                else if(RP.value3 == value){
+                                    RP.value3 = 0;
+                                }
+                                RP.values--;
+                            }
+                            else{
+                                //swap then delete
+                                if(curNode.value1 == value)
+                                    curNode.value1 = RP.value1;
+                                
+                                else if(curNode.value2 == value)
+                                    curNode.value2 = RP.value1;
+
+                                RP.value1 = RP.value2;
+                                RP.value2 = RP.value3;
+                                RP.value3 = 0;
+                                RP.values--;
+                            }
+                            break;
+                            
+                        }
+
+                        //RP is not leaf also not two nodes
+                        //keep going down
+
+                        RP = getImmediateRightChild(RP, value);
+                        if(RP.value1 == 41) System.out.println("reach here");
+                    }
+
+
+                }
+                else if(curNode.isFourNode()){
+                    if(value == curNode.value1){
+                        RP = curNode.centerLeftChild;
+                    }
+                    if(value == curNode.value2){
+                        RP = curNode.centerRightChild;
+                    }
+                    if(value == curNode.value3){
+                        RP = curNode.rightChild;
+                    }
+
+                    while(true){
+                        if(RP.isTwoNode()){
+                            if(RP == curNode.centerLeftChild){
+                                //fuse or rotate with left sibling, rotate clockwise
+                                if(!(RP.parent.leftChild.isTwoNode())){
+                                    prv2 = RP.parent.value1;
+                                    RP.value2 = RP.value1;
+                                    RP.value1 = prv2;
+                                    if(RP.parent.leftChild.isThreeNode())
+                                        RP.parent.value1 = RP.parent.leftChild.value2;
+                                    if(RP.parent.leftChild.isFourNode())
+                                        RP.parent.value1 = RP.parent.leftChild.value3;
+                                    RP.centerChild = RP.leftChild;
+                                    RP.leftChild = RP.parent.leftChild.rightChild;
+                                    if(RP.leftChild != null)
+                                        RP.leftChild.parent = RP;
+                                    RP.values++;
+
+                                    // fix L values
+                                    if(RP.parent.leftChild.isThreeNode())
+                                        RP.parent.leftChild.value2 = 0;
+                                    if(RP.parent.leftChild.isFourNode())
+                                        RP.parent.leftChild.value3 = 0;
+
+                                    // fix L pointers
+                                    if(RP.parent.leftChild.isThreeNode()){
+                                        RP.parent.leftChild.rightChild = RP.parent.leftChild.centerChild;
+                                        RP.parent.leftChild.centerChild = null;
+                                    }
+                                    if(RP.parent.leftChild.isFourNode()){
+                                        RP.parent.leftChild.rightChild = RP.parent.leftChild.centerRightChild;
+                                        RP.parent.leftChild.centerChild = RP.parent.leftChild.centerLeftChild;
+                                        RP.parent.leftChild.centerLeftChild = null;
+                                        RP.parent.leftChild.centerRightChild = null;
+                                    }
+                                    RP.parent.leftChild.values--;
+                                    
+                                }else{
+                                    RP = fuse(RP.parent.leftChild);
+                                }
+                            }else if (RP == curNode.centerRightChild){
+                                // System.out.println("RP is center right child");
+                                //fuse or rotate with center left child
+                                if(!(RP.parent.centerLeftChild.isTwoNode())){
+                                    //rotate with left only
+                                    // RP = fuse(RP);
+                                    prv2 = RP.parent.value2;
+                                    RP.value2 = RP.value1;
+                                    RP.value1 = prv2;
+                                    RP.values++;
+
+                                    if(RP.parent.centerLeftChild.isThreeNode())
+                                        RP.parent.value2 = RP.parent.centerLeftChild.value2;
+                                    if(RP.parent.centerLeftChild.isFourNode())
+                                        RP.parent.value2 = RP.parent.centerLeftChild.value3;
+                                    RP.centerChild = RP.leftChild;
+                                    RP.leftChild = RP.parent.centerLeftChild.rightChild;
+                                    RP.leftChild.parent = RP;
+
+                                    // fix L values
+                                    if(RP.parent.centerLeftChild.isThreeNode())
+                                        RP.parent.centerLeftChild.value2 = 0;
+                                    if(RP.parent.centerLeftChild.isFourNode())
+                                        RP.parent.centerLeftChild.value3 = 0;
+
+                                    // fix L pointers
+                                    if(RP.parent.centerLeftChild.isThreeNode()){
+                                        RP.parent.centerLeftChild.rightChild = RP.parent.centerLeftChild.centerChild;
+                                        RP.parent.centerLeftChild.centerChild = null;
+                                    }
+                                    if(RP.parent.centerLeftChild.isFourNode()){
+                                        RP.parent.centerLeftChild.rightChild = RP.parent.centerLeftChild.centerRightChild;
+                                        RP.parent.centerLeftChild.centerChild = RP.parent.centerLeftChild.centerLeftChild;
+                                        RP.parent.centerLeftChild.centerLeftChild = null;
+                                        RP.parent.centerLeftChild.centerRightChild = null;
+                                    }
+                                    RP.parent.centerLeftChild.values--;
+                                }else{
+
+                                    RP = fuse(RP);
+                                }
+                            }
+                            else if(RP == curNode.rightChild){
+                                // System.out.println("Rp is right child");
+                                if(!(RP.parent.centerRightChild.isTwoNode())){
+                                    //rotate
+                                    RP = rotate(RP);
+                                }else{
+                                    //fuse
+                                    RP = fuse(RP);
+                                }
+                            }
+                            
+                            else{
+                                //get the sibling then check if sibling is two node
+                                // System.out.println("RP is not above");
+                                sibling = getSibling(RP);
+                                if(sibling.isTwoNode()){
+                                    RP = fuse(RP);
+                                }else{
+                                    RP = rotate(RP);
+                                }
+                                
+                            }
+                            
+                        }
+                        
+                        
+                        // if(RP == null) System.out.println("RP is null");
+                        // else System.out.println("RP is not null");
+                        
+                        if(RP.isLeaf){
+                            if(RP.checkValueWithinTheNode(value)){
+                                
+                                if(RP.value1 == value){
+                                    RP.value1 = RP.value2;
+                                    RP.value2 = RP.value3;
+                                }
+                                else if(RP.value2 == value){
+                                    RP.value2 = RP.value3;
+                                    RP.value3 = 0;
+                                }
+                                else if(RP.value3 == value){
+                                    RP.value3 = 0;
+                                }
+                                RP.values--;
+                            }
+
+                        else{
+                                //swap then delete
+                                if(curNode.value1 == value)
+                                    curNode.value1 = RP.value1;
+                                
+                                if(curNode.value2 == value)
+                                    curNode.value2 = RP.value1;
+                                
+                                if(curNode.value3 == value)
+                                    curNode.value3 = RP.value1;
+
+                                RP.value1 = RP.value2;
+                                RP.value2 = RP.value3;
+                                RP.value3 = 0;
+                                RP.values--;
+                        }
+
+                        break;
+
+                        }
+                    
+                        //RP is not leaf also not two nodes
+                        //keep going down
+                        // System.out.println("reach here");
+                        RP = getImmediateRightChild(RP, value);
+                    
+                    }
+
+                }
+
+            }
+        //deletion complete
+        return true;
+    }
+
+   
+    public TwoFourTreeItem getImmediateRightChild(TwoFourTreeItem RP,int value){
+        
+        if(RP.isThreeNode()){
+            if(value == RP.value1){
+                return RP.centerChild;
+            }
+            else if(value == RP.value2){
+                return RP.rightChild;
+            }
+            else{
+                return RP.leftChild;
+            }
         }
+        else if(RP.isFourNode()){
+            if(value == RP.value1){
+                return RP.centerLeftChild;
+            }
+            else if(value == RP.value2){
+                return RP.centerRightChild;
+            }
+            else if(value == RP.value3){
+                return RP.rightChild;
+            }
+            else{
+                return RP.leftChild;
+            }
+        }
+
+        return null;
+    }
+
+    //take in the value of current node and the node
+    public TwoFourTreeItem getSibling(TwoFourTreeItem curNode){
+        TwoFourTreeItem sibling = null;
+        TwoFourTreeItem parent = curNode.parent;
+
+        if(curNode.parent.isTwoNode()){
+            if(curNode == parent.leftChild){
+                sibling = parent.rightChild;
+            }
+
+            if(curNode == parent.rightChild){
+                sibling = parent.leftChild;
+            }
+
+        }
+
+        else if(curNode.parent.isThreeNode()){
+            //curNode is left child
+            if(curNode == parent.leftChild){
+                sibling = parent.centerChild;
+            }
+            //curNode is right child
+            if(curNode == parent.rightChild){
+                sibling = parent.centerChild;   
+            }
+
+            //curNode is center child, I do not think it will reach this case, for now return the right child
+            if(curNode == parent.centerChild){
+                sibling = parent.rightChild;
+            }
+
+        }
+
+        else if(curNode.parent.isFourNode()){
+            if(curNode == parent.leftChild){
+                sibling = parent.centerLeftChild;
+            }
+
+            //for now choose sibling on the right side
+            if(curNode == parent.centerLeftChild){
+                sibling = parent.centerRightChild;
+            }
+            //for now choose sibling on the right side
+            if(curNode == parent.centerRightChild){
+                sibling = parent.centerLeftChild;
+            }
+
+            if(curNode == parent.rightChild){
+                sibling = parent.centerRightChild;
+            }
+
+        }
+
+        return sibling;
+    }
+
+    public TwoFourTreeItem fuse(TwoFourTreeItem curNode){
+
+        // if parent is 3 node
+        if(curNode.parent.isThreeNode()){
+
+            // leftChild fuse with center child
+            if(curNode == curNode.parent.leftChild){
+                // merge values
+                curNode.value2 = curNode.parent.value1;
+                curNode.value3 = curNode.parent.centerChild.value1;
+
+                curNode.parent.value1 = curNode.parent.value2;
+                curNode.parent.value2 = 0;
+                curNode.parent.values--;
+
+                // merge pointers
+                curNode.centerLeftChild = curNode.rightChild;
+                curNode.centerRightChild = curNode.parent.centerChild.leftChild;
+                curNode.rightChild = curNode.parent.centerChild.rightChild;
+
+                if (curNode.centerRightChild != null)
+                    curNode.centerRightChild.parent = curNode;
+                if (curNode.rightChild != null)
+                    curNode.rightChild.parent = curNode;
+
+                curNode.parent.centerChild = null;
+            }
+
+            // centerChild merge with the right
+            else if(curNode == curNode.parent.centerChild){
+                // merge values
+                curNode.value2 = curNode.parent.value2;
+                curNode.value3 = curNode.parent.rightChild.value1;
+
+                curNode.parent.value2 = 0;
+                curNode.parent.values--;
+
+                // merge pointers
+                curNode.centerLeftChild = curNode.rightChild;
+                curNode.centerRightChild = curNode.parent.rightChild.leftChild;
+                curNode.rightChild = curNode.parent.rightChild.rightChild;
+
+                if(curNode.centerRightChild != null)
+                    curNode.centerRightChild.parent = curNode;
+                if(curNode.rightChild != null)
+                    curNode.rightChild.parent = curNode;
+
+                curNode.parent.rightChild = curNode;
+                curNode.parent.centerChild = null; 
+            }
+
+            // rightChild, fuse with center child
+            else if(curNode == curNode.parent.rightChild){
+                // merge values
+                curNode.value3 = curNode.value1;
+                curNode.value2 = curNode.parent.value2;
+                curNode.value1 = curNode.parent.centerChild.value1;
+
+                curNode.parent.value2 = 0;
+                curNode.parent.values--;
+
+                // merge pointers
+                curNode.centerRightChild = curNode.leftChild;
+                curNode.centerLeftChild = curNode.parent.centerChild.rightChild;
+                curNode.leftChild = curNode.parent.centerChild.leftChild;
+
+                if(curNode.centerLeftChild != null)
+                    curNode.centerLeftChild.parent = curNode;
+                if(curNode.leftChild != null)
+                    curNode.leftChild.parent = curNode;
+
+                curNode.parent.centerChild = null;
+
+            }
+
+            curNode.values = 3;
+        }
+
+        // if parent is 4 node
+        if(curNode.parent.isFourNode()){
+
+            // leftChild, fuse with center left child
+            if(curNode == curNode.parent.leftChild){
+                // merge values
+                curNode.value2 = curNode.parent.value1;
+                curNode.value3 = curNode.parent.centerLeftChild.value1;
+
+                curNode.parent.value1 = curNode.parent.value2;
+                curNode.parent.value2 = curNode.parent.value3;
+                curNode.parent.value3 = 0;
+                curNode.parent.values--;
+
+                // merge pointers
+                curNode.centerLeftChild = curNode.rightChild;
+                curNode.centerRightChild = curNode.parent.centerLeftChild.leftChild;
+                curNode.rightChild = curNode.parent.centerLeftChild.rightChild;
+
+                if(curNode.centerRightChild != null)
+                    curNode.centerRightChild.parent = curNode;
+                if(curNode.rightChild != null)
+                    curNode.rightChild.parent = curNode;
+
+                curNode.parent.centerChild = curNode.parent.centerRightChild;
+                
+                curNode.parent.centerLeftChild = null;
+                curNode.parent.centerRightChild = null;
+
+            }
+
+            // centerLeftChild or centerRightChild
+            else if(curNode == curNode.parent.centerLeftChild || curNode == curNode.parent.centerRightChild){
+
+                curNode.value2 = curNode.parent.value2;
+                curNode.parent.value2 = curNode.parent.value3;
+                curNode.parent.value3 = 0;
+                curNode.parent.values--;
+
+                if(curNode == curNode.parent.centerLeftChild){
+                    
+                    curNode.value3 = curNode.parent.centerRightChild.value1;
+
+                    curNode.centerLeftChild = curNode.rightChild;
+                    curNode.centerRightChild = curNode.parent.centerRightChild.leftChild;
+                    curNode.rightChild = curNode.parent.centerRightChild.rightChild;
+
+                    if(curNode.centerRightChild != null)
+                        curNode.centerRightChild.parent = curNode;
+                    if(curNode.rightChild != null)
+                        curNode.rightChild.parent = curNode;
+
+                }
+                if(curNode == curNode.parent.centerRightChild){
+                    
+                    curNode.value3 = curNode.value1;
+                    curNode.value1 = curNode.parent.centerLeftChild.value1;
+
+                    curNode.centerRightChild = curNode.leftChild;
+                    curNode.centerLeftChild = curNode.parent.centerLeftChild.rightChild;
+                    curNode.leftChild = curNode.parent.centerLeftChild.leftChild;
+
+                    if(curNode.centerLeftChild != null)
+                        curNode.centerLeftChild.parent = curNode;
+                    if(curNode.leftChild != null)
+                        curNode.leftChild.parent = curNode;
+                    
+                }
+
+                //merge
+                curNode.parent.centerChild = curNode;
+
+                curNode.parent.centerLeftChild = null;
+                curNode.parent.centerRightChild = null;
+            }
+
+            // rightChild
+            else if( curNode == curNode.parent.rightChild){
+
+                // merge values
+                curNode.value3 = curNode.value1;
+                curNode.value2 = curNode.parent.value3;
+                curNode.value1 = curNode.parent.centerRightChild.value1;
+
+                curNode.parent.value3 = 0;
+                curNode.parent.values--;
+
+                // merge pointers
+                curNode.centerRightChild = curNode.leftChild;
+                curNode.centerLeftChild = curNode.parent.centerRightChild.rightChild;
+                curNode.leftChild = curNode.parent.centerRightChild.leftChild;
+
+                if(curNode.centerLeftChild != null)
+                    curNode.centerLeftChild.parent = curNode;
+                if(curNode.leftChild != null)
+                    curNode.leftChild.parent = curNode;
+
+                curNode.parent.centerChild = curNode.parent.centerLeftChild;
+
+                curNode.parent.centerRightChild = null;
+                curNode.parent.centerLeftChild = null;
+            }
+
+            curNode.values = 3;
+
+        }
+
+        return curNode;
+    }
+
+    //rotate and return the current node that thas more than one key.
+    public TwoFourTreeItem  rotate(TwoFourTreeItem curNode){
+
+            int prv;
+
+            // if parent is 3 node
+            if(curNode.parent.isThreeNode()){
+
+                // leftChild, anticlockwise
+                if(curNode == curNode.parent.leftChild && !(curNode.parent.centerChild.isTwoNode())){
+
+                    // rotate anticlockwise
+                    prv = curNode.parent.value1;
+                    curNode.value2 = prv;
+                    curNode.parent.value1 = curNode.parent.centerChild.value1;
+                    curNode.centerChild = curNode.rightChild;
+                    curNode.rightChild = curNode.parent.centerChild.leftChild;
+                    if(curNode.rightChild != null)
+                        curNode.rightChild.parent = curNode;
+                    curNode.values++;
+
+                    // fix R values
+                    curNode.parent.centerChild.value1 = curNode.parent.centerChild.value2;
+                    curNode.parent.centerChild.value2 = curNode.parent.centerChild.value3;
+                    curNode.parent.centerChild.value3 = 0;
+
+                    // fix R pointers
+                    if(curNode.parent.centerChild.isThreeNode()){
+                        curNode.parent.centerChild.leftChild = curNode.parent.centerChild.centerChild;
+                        curNode.parent.centerChild.centerChild = null;
+                    }
+                    if(curNode.parent.centerChild.isFourNode()){
+                        curNode.parent.centerChild.leftChild = curNode.parent.centerChild.centerLeftChild;
+                        curNode.parent.centerChild.centerChild = curNode.parent.centerChild.centerRightChild;
+                        curNode.parent.centerChild.centerLeftChild = null;
+                        curNode.parent.centerChild.centerRightChild = null;
+                    }
+                    curNode.parent.centerChild.values--;
+                    return curNode;
+
+                }
+
+                // centerChild, anticlockwise
+                else if(curNode == curNode.parent.centerChild && !(curNode.parent.rightChild.isTwoNode())){
+
+                    // rotate anticlockwise
+                    prv = curNode.parent.value2;
+                    curNode.value2 = prv;
+                    curNode.parent.value2 = curNode.parent.rightChild.value1;
+                    curNode.centerChild = curNode.rightChild;
+                    curNode.rightChild = curNode.parent.rightChild.leftChild;
+                    if(curNode.rightChild != null)
+                        curNode.rightChild.parent = curNode;
+                    curNode.values++;
+
+                    // fix R values
+                    curNode.parent.rightChild.value1 = curNode.parent.rightChild.value2;
+                    curNode.parent.rightChild.value2 = curNode.parent.rightChild.value3;
+                    curNode.parent.rightChild.value3 = 0;
+
+                    // fix R pointers
+                    if(curNode.parent.rightChild.isThreeNode()){
+                        curNode.parent.rightChild.leftChild = curNode.parent.rightChild.centerChild;
+                        curNode.parent.rightChild.centerChild = null;
+                    }
+                    if(curNode.parent.rightChild.isFourNode()){
+                        curNode.parent.rightChild.leftChild = curNode.parent.rightChild.centerLeftChild;
+                        curNode.parent.rightChild.centerChild = curNode.parent.rightChild.centerRightChild;
+                        curNode.parent.rightChild.centerLeftChild = null;
+                        curNode.parent.rightChild.centerRightChild = null;
+                    }
+                    curNode.parent.rightChild.values--;
+                    return curNode;
+
+                }
+
+                // centerChild, clockwise
+                if(curNode == curNode.parent.centerChild && !(curNode.parent.leftChild.isTwoNode())){
+
+                    // rotate clockwise
+                    prv = curNode.parent.value1;
+                    curNode.value2 = curNode.value1;
+                    curNode.value1 = prv;
+                    if(curNode.parent.leftChild.isThreeNode())
+                        curNode.parent.value1 = curNode.parent.leftChild.value2;
+                    if(curNode.parent.leftChild.isFourNode())
+                        curNode.parent.value1 = curNode.parent.leftChild.value3;
+                    curNode.centerChild = curNode.leftChild;
+                    curNode.leftChild = curNode.parent.leftChild.rightChild;
+                    if(curNode.leftChild != null)
+                        curNode.leftChild.parent = curNode;
+                    curNode.values++;
+
+                    // fix L values
+                    if(curNode.parent.leftChild.isThreeNode())
+                        curNode.parent.leftChild.value2 = 0;
+                    if(curNode.parent.leftChild.isFourNode())
+                        curNode.parent.leftChild.value3 = 0;
+
+                    // fix L pointers
+                    if(curNode.parent.leftChild.isThreeNode()){
+                        curNode.parent.leftChild.rightChild = curNode.parent.leftChild.centerChild;
+                        curNode.parent.leftChild.centerChild = null;
+                    }
+                    if(curNode.parent.leftChild.isFourNode()){
+                        curNode.parent.leftChild.rightChild = curNode.parent.leftChild.centerRightChild;
+                        curNode.parent.leftChild.centerChild = curNode.parent.leftChild.centerLeftChild;
+                        curNode.parent.leftChild.centerLeftChild = null;
+                        curNode.parent.leftChild.centerRightChild = null;
+                    }
+                    curNode.parent.leftChild.values--;
+                    return curNode;
+
+                }
+
+                // rightChild, clockwise
+                if(curNode == curNode.parent.rightChild && !(curNode.parent.centerChild.isTwoNode())){
+
+                    // rotate clockwise
+                    prv = curNode.parent.value2;
+                    curNode.value2 = curNode.value1;
+                    curNode.value1 = prv;
+                    if(curNode.parent.centerChild.isThreeNode())
+                        curNode.parent.value2 = curNode.parent.centerChild.value2;
+                    if(curNode.parent.centerChild.isFourNode())
+                       curNode.parent.value2 = curNode.parent.centerChild.value3;
+                    curNode.centerChild = curNode.leftChild;
+                    curNode.leftChild = curNode.parent.centerChild.rightChild;
+                    if(curNode.leftChild != null)
+                        curNode.leftChild.parent = curNode;
+                    curNode.values++;
+
+                    // fix L values
+                    if(curNode.parent.centerChild.isThreeNode())
+                        curNode.parent.centerChild.value2 = 0;
+                    if(curNode.parent.centerChild.isFourNode())
+                        curNode.parent.centerChild.value3 = 0;
+
+                    // fix L pointers
+                    if(curNode.parent.centerChild.isThreeNode()){
+                        curNode.parent.centerChild.rightChild = curNode.parent.centerChild.centerChild;
+                        curNode.parent.centerChild.centerChild = null;
+                    }
+                    if(curNode.parent.centerChild.isFourNode()){
+                        curNode.parent.centerChild.rightChild = curNode.parent.centerChild.centerRightChild;
+                        curNode.parent.centerChild.centerChild = curNode.parent.centerChild.centerLeftChild;
+                        curNode.parent.centerChild.centerLeftChild = null;
+                        curNode.parent.centerChild.centerRightChild = null;
+                    }
+                    curNode.parent.leftChild.values--;
+                    return curNode;
+
+                }
+
+            }
+
+            // if parent is 4 node
+            if(curNode.parent.isFourNode()){
+
+                // leftChild, anticlockwise
+                if(curNode == curNode.parent.leftChild && !(curNode.parent.centerLeftChild.isTwoNode())){
+
+                    // rotate anticlockwise
+                    prv = curNode.parent.value1;
+                    curNode.value2 = prv;
+                    curNode.parent.value1 = curNode.parent.centerLeftChild.value1;
+                    curNode.centerChild = curNode.rightChild;
+                    curNode.rightChild = curNode.parent.centerLeftChild.leftChild;
+                    curNode.rightChild.parent = curNode;
+                    curNode.values++;
+
+                    // fix R values
+                    curNode.parent.centerLeftChild.value1 = curNode.parent.centerLeftChild.value2;
+                    curNode.parent.centerLeftChild.value2 = curNode.parent.centerLeftChild.value3;
+                    curNode.parent.centerLeftChild.value3 = 0;
+
+                    // fix R pointers
+                    if(curNode.parent.centerLeftChild.isThreeNode()){
+                        curNode.parent.centerLeftChild.leftChild = curNode.parent.centerLeftChild.centerChild;
+                        curNode.parent.centerLeftChild.centerChild = null;
+                    }
+                    if(curNode.parent.centerLeftChild.isFourNode()){
+                        curNode.parent.centerLeftChild.leftChild = curNode.parent.centerLeftChild.centerLeftChild;
+                        curNode.parent.centerLeftChild.centerChild = curNode.parent.centerLeftChild.centerRightChild;
+                        curNode.parent.centerLeftChild.centerLeftChild = null;
+                        curNode.parent.centerLeftChild.centerRightChild = null;
+                    }
+                    curNode.parent.centerLeftChild.values--;
+                    return curNode;
+
+                }
+
+                // centerLeftChild, anticlockwise
+                if(curNode == curNode.parent.centerLeftChild && !(curNode.parent.centerRightChild.isTwoNode())){
+
+                    // rotate anticlockwise
+                    prv = curNode.parent.value2;
+                    curNode.value2 = prv;
+                    curNode.parent.value2 = curNode.parent.centerRightChild.value1;
+                    curNode.centerChild = curNode.rightChild;
+                    curNode.rightChild = curNode.parent.centerRightChild.leftChild;
+                    curNode.rightChild.parent = curNode;
+                    curNode.values++;
+
+                    // fix R values
+                    curNode.parent.centerRightChild.value1 = curNode.parent.centerRightChild.value2;
+                    curNode.parent.centerRightChild.value2 = curNode.parent.centerRightChild.value3;
+                    curNode.parent.centerRightChild.value3 = 0;
+
+                    // fix R pointers
+                    if(curNode.parent.centerRightChild.isThreeNode()){
+                        curNode.parent.centerRightChild.leftChild = curNode.parent.centerRightChild.centerChild;
+                        curNode.parent.centerRightChild.centerChild = null;
+                    }
+                    if(curNode.parent.centerRightChild.isFourNode()){
+                        curNode.parent.centerRightChild.leftChild = curNode.parent.centerRightChild.centerLeftChild;
+                        curNode.parent.centerRightChild.centerChild = curNode.parent.centerRightChild.centerRightChild;
+                        curNode.parent.centerRightChild.centerLeftChild = null;
+                        curNode.parent.centerRightChild.centerRightChild = null;
+                    }
+                    curNode.parent.centerRightChild.values--;
+                    return curNode;
+
+                }
+
+                // centerRightChild, anticlockwise
+                if(curNode == curNode.parent.centerRightChild && !(curNode.parent.rightChild.isTwoNode())){
+
+                    // rotate anticlockwise
+                    prv = curNode.parent.value3;
+                    curNode.value2 = prv;
+                    curNode.parent.value3 = curNode.parent.rightChild.value1;
+                    curNode.centerChild = curNode.rightChild;
+                    curNode.rightChild = curNode.parent.rightChild.leftChild;
+                    curNode.rightChild.parent = curNode;
+                    curNode.values++;
+
+                    // fix R values
+                    curNode.parent.rightChild.value1 = curNode.parent.rightChild.value2;
+                    curNode.parent.rightChild.value2 = curNode.parent.rightChild.value3;
+                    curNode.parent.rightChild.value3 = 0;
+
+                    // fix R pointers
+                    if(curNode.parent.rightChild.isThreeNode()){
+                        curNode.parent.rightChild.leftChild = curNode.parent.rightChild.centerChild;
+                        curNode.parent.rightChild.centerChild = null;
+                    }
+                    if(curNode.parent.rightChild.isFourNode()){
+                        curNode.parent.rightChild.leftChild = curNode.parent.rightChild.centerLeftChild;
+                        curNode.parent.rightChild.centerChild = curNode.parent.rightChild.centerRightChild;
+                        curNode.parent.rightChild.centerLeftChild = null;
+                        curNode.parent.rightChild.centerRightChild = null;
+                    }
+                    curNode.parent.rightChild.values--;
+                    return curNode;
+
+                }
+
+                // centerLeftChild, clockwise
+                if(curNode == curNode.parent.centerLeftChild && !(curNode.parent.leftChild.isTwoNode())){
+
+                    // rotate clockwise
+                    prv = curNode.parent.value1;
+                    curNode.value2 = curNode.value1;
+                    curNode.value1 = prv;
+                    if(curNode.parent.leftChild.isThreeNode())
+                        curNode.parent.value1 = curNode.parent.leftChild.value2;
+                    if(curNode.parent.leftChild.isFourNode())
+                        curNode.parent.value1 = curNode.parent.leftChild.value3;
+                    curNode.centerChild = curNode.leftChild;
+                    curNode.leftChild = curNode.parent.leftChild.rightChild;
+                    if(curNode.leftChild != null)
+                        curNode.leftChild.parent = curNode;
+                    curNode.values++;
+
+                    // fix L values
+                    if(curNode.parent.leftChild.isThreeNode())
+                        curNode.parent.leftChild.value2 = 0;
+                    if(curNode.parent.leftChild.isFourNode())
+                        curNode.parent.leftChild.value3 = 0;
+
+                    // fix L pointers
+                    if(curNode.parent.leftChild.isThreeNode()){
+                        curNode.parent.leftChild.rightChild = curNode.parent.leftChild.centerChild;
+                        curNode.parent.leftChild.centerChild = null;
+                    }
+                    if(curNode.parent.leftChild.isFourNode()){
+                        curNode.parent.leftChild.rightChild = curNode.parent.leftChild.centerRightChild;
+                        curNode.parent.leftChild.centerChild = curNode.parent.leftChild.centerLeftChild;
+                        curNode.parent.leftChild.centerLeftChild = null;
+                        curNode.parent.leftChild.centerRightChild = null;
+                    }
+                    curNode.parent.leftChild.values--;
+                    return curNode;
+
+                }
+
+                // centerRightChild, clockwise
+                if(curNode == curNode.parent.centerRightChild && !(curNode.parent.centerLeftChild.isTwoNode())){
+
+                    // rotate clockwise
+                    prv = curNode.parent.value2;
+                    curNode.value2 = curNode.value1;
+                    curNode.value1 = prv;
+                    if(curNode.parent.centerLeftChild.isThreeNode())
+                        curNode.parent.value2 = curNode.parent.centerLeftChild.value2;
+                    if(curNode.parent.centerLeftChild.isFourNode())
+                        curNode.parent.value2 = curNode.parent.centerLeftChild.value3;
+                    curNode.centerChild = curNode.leftChild;
+                    curNode.leftChild = curNode.parent.centerLeftChild.rightChild;
+                    if(curNode.leftChild != null)
+                        curNode.leftChild.parent = curNode;
+                    curNode.values++;
+
+                    // fix L values
+                    if(curNode.parent.centerLeftChild.isThreeNode())
+                        curNode.parent.centerLeftChild.value2 = 0;
+                    if(curNode.parent.centerLeftChild.isFourNode())
+                        curNode.parent.centerLeftChild.value3 = 0;
+
+                    // fix L pointers
+                    if(curNode.parent.centerLeftChild.isThreeNode()){
+                        curNode.parent.centerLeftChild.rightChild = curNode.parent.centerLeftChild.centerChild;
+                        curNode.parent.centerLeftChild.centerChild = null;
+                    }
+                    if(curNode.parent.centerLeftChild.isFourNode()){
+                        curNode.parent.centerLeftChild.rightChild = curNode.parent.centerLeftChild.centerRightChild;
+                        curNode.parent.centerLeftChild.centerChild = curNode.parent.centerLeftChild.centerLeftChild;
+                        curNode.parent.centerLeftChild.centerLeftChild = null;
+                        curNode.parent.centerLeftChild.centerRightChild = null;
+                    }
+                    curNode.parent.centerLeftChild.values--;
+                    return curNode;
+
+                }
+
+                // rightChild, clockwise
+                if(curNode == curNode.parent.rightChild && !(curNode.parent.centerRightChild.isTwoNode())){
+
+                    // rotate clockwise
+                    prv = curNode.parent.value3;
+                    curNode.value2 = curNode.value1;
+                    curNode.value1 = prv;
+                    if(curNode.parent.centerRightChild.isThreeNode())
+                        curNode.parent.value3 = curNode.parent.centerRightChild.value2;
+                    if(curNode.parent.centerRightChild.isFourNode())
+                        curNode.parent.value3 = curNode.parent.centerRightChild.value3;
+                    curNode.centerChild = curNode.leftChild;
+                    curNode.leftChild = curNode.parent.centerRightChild.rightChild;
+                    if(curNode.leftChild != null) 
+                        curNode.leftChild.parent = curNode;
+                    curNode.values++;
+
+                    // fix L values
+                    if(curNode.parent.centerRightChild.isThreeNode())
+                        curNode.parent.centerRightChild.value2 = 0;
+                    if(curNode.parent.centerRightChild.isFourNode())
+                        curNode.parent.centerRightChild.value3 = 0;
+
+                    // fix L pointers
+                    if(curNode.parent.centerRightChild.isThreeNode()){
+                        curNode.parent.centerRightChild.rightChild = curNode.parent.centerRightChild.centerChild;
+                        curNode.parent.centerRightChild.centerChild = null;
+                    }
+                    if(curNode.parent.centerRightChild.isFourNode()){
+                        curNode.parent.centerRightChild.rightChild = curNode.parent.centerRightChild.centerRightChild;
+                        curNode.parent.centerRightChild.centerChild = curNode.parent.centerRightChild.centerLeftChild;
+                        curNode.parent.centerRightChild.centerLeftChild = null;
+                        curNode.parent.centerRightChild.centerRightChild = null;
+                    }
+                    curNode.parent.centerRightChild.values--;
+                    return curNode;
+
+                }
+
+            }
+            
+            return null;
+            // end of rotate
+    
+        }
+
+
+    public TwoFourTreeItem findLeftMostOfRightChild(TwoFourTreeItem currentNode){
+        if(currentNode == null)
+            return null;
+        
+            currentNode = currentNode.rightChild;
+
+            while(currentNode.leftChild != null){
+                currentNode = currentNode.leftChild;
+            }
+            return currentNode;
+    }
+
+    public TwoFourTreeItem findRightMostOfLeftChild(TwoFourTreeItem currentNode){
+        if(currentNode == null)
+            return null;
+        
+            currentNode = currentNode.leftChild;
+
+            while(currentNode.rightChild != null){
+                currentNode = currentNode.rightChild;
+            }
+            return currentNode;
     }
 
 
